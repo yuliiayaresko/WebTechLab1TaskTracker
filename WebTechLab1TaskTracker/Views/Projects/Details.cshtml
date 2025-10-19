@@ -1,0 +1,288 @@
+﻿@model WebTechLab1TaskTracker.Models.Project
+@{
+    ViewData["Title"] = $"{Model.Name} - Landing Page";
+}
+
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+<style>
+    body {
+        background-color: var(--body-bg, #1c1f26);
+        color: var(--text-color, #f8f9fa);
+        scroll-behavior: smooth;
+    }
+
+    section {
+        padding: 5rem 0;
+    }
+
+    .navbar-dark {
+        background-color: var(--card-bg, #242730) !important;
+    }
+
+    /* === Головна секція з фоном === */
+    .hero-section {
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        text-align: center;
+        background-image: url('/images/background.png'); 
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        position: relative;
+        color: #fff;
+    }
+
+        .hero-section::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 1;
+        }
+
+        /* щоб текст був поверх затемнення */
+        .hero-section > div {
+            position: relative;
+            z-index: 2;
+        }
+
+    .btn-primary {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+
+        .btn-primary:hover {
+            background-color: #0b5ed7;
+        }
+
+    .card {
+        background-color: var(--card-bg, #2c303a);
+        border: 1px solid var(--border-color, #3a3d46);
+        color: var(--text-color, #f8f9fa);
+        transition: transform .3s ease, box-shadow .3s ease;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 15px rgba(13,110,253,0.2);
+        }
+
+    footer {
+        background-color: var(--card-bg, #242730);
+        color: var(--text-color, #ccc);
+    }
+
+    body {
+        background-color: #1c1f26;
+        color: #f8f9fa;
+        scroll-behavior: smooth;
+        padding-bottom: 80px;
+    }
+
+    section {
+        padding: 5rem 0;
+    }
+
+    .navbar-dark {
+        background-color: #242730 !important;
+    }
+
+    .hero-section {
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        text-align: center;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+        color: #fff;
+    }
+
+        .hero-section::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 1;
+        }
+
+        .hero-section > div {
+            position: relative;
+            z-index: 2;
+        }
+
+    .card {
+        background-color: #2c303a;
+        border: 1px solid #3a3d46;
+        transition: transform .3s ease, box-shadow .3s ease;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 15px rgba(13,110,253,0.2);
+        }
+
+    footer {
+        background-color: #242730;
+        color: #ccc;
+        padding: 1rem 0;
+    }
+</style>
+
+<nav class="navbar navbar-dark fixed-top shadow-sm">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="#">@Model.Name</a>
+        <ul class="nav">
+            <li class="nav-item"><a class="nav-link text-light" href="#hero">Home</a></li>
+            <li class="nav-item"><a class="nav-link text-light" href="#tasks">Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link text-light" href="#author">Author</a></li>
+        </ul>
+    </div>
+</nav>
+
+<section id="hero" class="hero-section" style="background-image: url('@(Model.ImagePath ?? "/images/background.png")')">
+    <div data-aos="fade-up">
+        <h1 class="display-3 fw-bold mb-3">@Model.Name</h1>
+        <p class="lead mb-4">@Model.Description</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a asp-controller="Tasks" asp-action="Create" asp-route-projectId="@Model.Id" class="btn btn-primary btn-lg">
+                <i class="fas fa-plus me-2"></i>Add New Task
+            </a>
+            <a asp-controller="Projects" asp-action="Index" class="btn btn-outline-light btn-lg">
+                <i class="fas fa-arrow-left me-2"></i>Back to All Projects
+            </a>
+        </div>
+    </div>
+</section>
+
+<section id="tasks">
+    <div class="container">
+        <h2 class="text-center mb-5" data-aos="fade-up">Project Dashboard</h2>
+
+        <div class="row mb-5 align-items-center" data-aos="fade-up">
+            <div class="col-lg-4">
+                <h4>Statistics</h4>
+                <p class="text-white-50">Quick overview of the project's tasks by their current status and user assignment.</p>
+            </div>
+            <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
+                <canvas id="taskStatusChart" style="max-height: 220px;"></canvas>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <canvas id="taskUserChart" style="max-height: 220px;"></canvas>
+            </div>
+        </div>
+
+        <h3 class="mb-4" data-aos="fade-up">Task List (@Model.Tasks.Count())</h3>
+        @if (Model.Tasks.Any())
+        {
+            <div class="row">
+                @foreach (var task in Model.Tasks.OrderBy(t => t.Status))
+                {
+                    <div class="col-md-6 col-lg-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title mb-2">
+                                    <span class="badge bg-primary me-2">@task.Status</span> @task.Title
+                                </h5>
+                                <p class="card-text text-white-50 flex-grow-1">@task.Description</p>
+                                <a asp-controller="Tasks" asp-action="Details" asp-route-id="@task.Id" class="btn btn-outline-light mt-auto">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="text-center text-muted">No tasks have been created yet.</p>
+        }
+    </div>
+    <section id="author" class="bg-dark">
+        <div class="container text-center" data-aos="fade-up">
+            <h2 class="mb-4">Author Information</h2>
+            <div class="d-inline-block rounded-3 p-4 border shadow-sm text-start" style="background-color:#2c303a;">
+                <p class="mb-1"><strong>Name:</strong> @Model.ApplicationUser.UserName</p>
+                <p class="mb-0"><strong>Email:</strong> @Model.ApplicationUser.Email</p>
+            </div>
+        </div>
+    </section>
+    <section id="contact">
+        <div class="container text-center" data-aos="fade-up">
+            <h2 class="mb-3">Contact</h2>
+            <p class="lead mb-4">Questions or suggestions about this project?</p>
+            <a href="mailto:@Model.ApplicationUser.Email" class="btn btn-primary btn-lg">
+                <i class="fas fa-envelope me-2"></i> Email Author
+            </a>
+        </div>
+    </section>
+</section>
+
+
+
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script> AOS.init({ duration: 800, once: true }); </script>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const projectId = @Model.Id;
+
+            const statusCanvas = document.getElementById('taskStatusChart');
+            const userCanvas = document.getElementById('taskUserChart');
+
+            const statusPromise = fetch(`/Projects/GetTaskStatistics/${projectId}`).then(res => res.json());
+            const userPromise = fetch(`/Projects/GetTaskUserStatistics/${projectId}`).then(res => res.json());
+
+            Promise.all([statusPromise, userPromise])
+                .then(([statusData, userData]) => {
+
+                    // --- Діаграма Статусів ---
+                    if (statusData && statusData.length > 0) {
+                        new Chart(statusCanvas.getContext('2d'), {
+                            type: 'doughnut',
+                            data: {
+                                labels: statusData.map(d => d.status),
+                                datasets: [{ data: statusData.map(d => d.count), backgroundColor: ['rgba(54, 162, 235, 0.8)', 'rgba(255, 206, 86, 0.8)', 'rgba(75, 192, 192, 0.8)'], borderColor: '#2c303a', borderWidth: 3 }]
+                            },
+                            options: { responsive: true, plugins: { legend: { position: 'top', labels: { color: '#f8f9fa' } }, title: { display: true, text: 'Tasks by Status', color: '#f8f9fa' } } }
+                        });
+                    } else {
+                        statusCanvas.parentElement.innerHTML = '<p class="text-center text-muted small h-100 d-flex align-items-center justify-content-center">No status data.</p>';
+                    }
+
+                    // --- Діаграма Користувачів ---
+                    if (userData && userData.length > 0) {
+                        new Chart(userCanvas.getContext('2d'), {
+                            type: 'bar',
+                            data: {
+                                labels: userData.map(d => d.userName),
+                                datasets: [{ label: 'Tasks', data: userData.map(d => d.count), backgroundColor: ['rgba(75, 192, 192, 0.7)', 'rgba(255, 159, 64, 0.7)', 'rgba(255, 99, 132, 0.7)', 'rgba(153, 102, 255, 0.7)'] }]
+                            },
+                            options: {
+                                indexAxis: 'y',
+                                responsive: true,
+                                plugins: { legend: { display: false }, title: { display: true, text: 'Tasks by User', color: '#f8f9fa' } },
+                                scales: { x: { ticks: { color: '#f8f9fa', stepSize: 1 } }, y: { ticks: { color: '#f8f9fa' } } }
+                            }
+                        });
+                    } else {
+                        userCanvas.parentElement.innerHTML = '<p class="text-center text-muted small h-100 d-flex align-items-center justify-content-center">No user data.</p>';
+                    }
+                })
+                .catch(error => console.error('Error fetching chart data:', error));
+        });
+    </script>
+}

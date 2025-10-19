@@ -12,8 +12,8 @@ using WebTechLab1TaskTracker.Data;
 namespace WebTechLab1TaskTracker.Migrations
 {
     [DbContext(typeof(TaskTrackerDbContext))]
-    [Migration("20250930122447_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20251009134006_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -105,10 +105,12 @@ namespace WebTechLab1TaskTracker.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("ProviderKey")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("ProviderDisplayName")
                         .HasColumnType("nvarchar(max)");
@@ -145,10 +147,12 @@ namespace WebTechLab1TaskTracker.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("Value")
                         .HasColumnType("nvarchar(max)");
@@ -235,9 +239,6 @@ namespace WebTechLab1TaskTracker.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("ApplicationUserId1")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -251,8 +252,6 @@ namespace WebTechLab1TaskTracker.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ApplicationUserId");
-
-                    b.HasIndex("ApplicationUserId1");
 
                     b.HasIndex("TaskId");
 
@@ -271,9 +270,6 @@ namespace WebTechLab1TaskTracker.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("ApplicationUserId1")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -285,8 +281,6 @@ namespace WebTechLab1TaskTracker.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ApplicationUserId");
-
-                    b.HasIndex("ApplicationUserId1");
 
                     b.ToTable("Projects");
                 });
@@ -301,9 +295,6 @@ namespace WebTechLab1TaskTracker.Migrations
 
                     b.Property<string>("ApplicationUserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("ApplicationUserId1")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedAt")
@@ -330,8 +321,6 @@ namespace WebTechLab1TaskTracker.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ApplicationUserId");
-
-                    b.HasIndex("ApplicationUserId1");
 
                     b.HasIndex("ProjectId");
 
@@ -392,19 +381,15 @@ namespace WebTechLab1TaskTracker.Migrations
             modelBuilder.Entity("WebTechLab1TaskTracker.Models.Comment", b =>
                 {
                     b.HasOne("WebTechLab1TaskTracker.Models.ApplicationUser", "ApplicationUser")
-                        .WithMany()
+                        .WithMany("Comments")
                         .HasForeignKey("ApplicationUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("WebTechLab1TaskTracker.Models.ApplicationUser", null)
-                        .WithMany("Comments")
-                        .HasForeignKey("ApplicationUserId1");
-
                     b.HasOne("WebTechLab1TaskTracker.Models.Task", "Task")
-                        .WithMany()
+                        .WithMany("Comments")
                         .HasForeignKey("TaskId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("ApplicationUser");
@@ -415,14 +400,10 @@ namespace WebTechLab1TaskTracker.Migrations
             modelBuilder.Entity("WebTechLab1TaskTracker.Models.Project", b =>
                 {
                     b.HasOne("WebTechLab1TaskTracker.Models.ApplicationUser", "ApplicationUser")
-                        .WithMany()
+                        .WithMany("Projects")
                         .HasForeignKey("ApplicationUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("WebTechLab1TaskTracker.Models.ApplicationUser", null)
-                        .WithMany("Projects")
-                        .HasForeignKey("ApplicationUserId1");
 
                     b.Navigation("ApplicationUser");
                 });
@@ -430,17 +411,13 @@ namespace WebTechLab1TaskTracker.Migrations
             modelBuilder.Entity("WebTechLab1TaskTracker.Models.Task", b =>
                 {
                     b.HasOne("WebTechLab1TaskTracker.Models.ApplicationUser", "ApplicationUser")
-                        .WithMany()
+                        .WithMany("Tasks")
                         .HasForeignKey("ApplicationUserId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("WebTechLab1TaskTracker.Models.ApplicationUser", null)
-                        .WithMany("Tasks")
-                        .HasForeignKey("ApplicationUserId1");
-
                     b.HasOne("WebTechLab1TaskTracker.Models.Project", "Project")
-                        .WithMany()
+                        .WithMany("Tasks")
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -457,6 +434,16 @@ namespace WebTechLab1TaskTracker.Migrations
                     b.Navigation("Projects");
 
                     b.Navigation("Tasks");
+                });
+
+            modelBuilder.Entity("WebTechLab1TaskTracker.Models.Project", b =>
+                {
+                    b.Navigation("Tasks");
+                });
+
+            modelBuilder.Entity("WebTechLab1TaskTracker.Models.Task", b =>
+                {
+                    b.Navigation("Comments");
                 });
 #pragma warning restore 612, 618
         }

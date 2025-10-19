@@ -3,42 +3,62 @@ using WebTechLab1TaskTracker;
 using Microsoft.AspNetCore.Identity;
 using WebTechLab1TaskTracker.Models;
 using WebTechLab1TaskTracker.Data;
+using WebTechLab1TaskTracker.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 builder.Services.AddDbContext<TaskTrackerDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")
-    ));
+    options.UseSqlServer(connectionString));
+
+builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
+    .AddEntityFrameworkStores<TaskTrackerDbContext>();
+
+builder.Services.AddScoped< INotificationService , TelegramNotificationService >();
+
+builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages(); // Додаємо підтримку Razor Pages для Identity
+builder.Services.AddAuthentication()
+    .AddGoogle(options =>
+    {
+        // Отримуємо конфігурацію з appsettings.json
+        IConfigurationSection googleAuthNSection =
+            builder.Configuration.GetSection("Authentication:Google");
+
+        options.ClientId = googleAuthNSection["ClientId"];
+        options.ClientSecret = googleAuthNSection["ClientSecret"];
+    });
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
+{
+   
+}
+else
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+
 app.UseRouting();
 
-app.UseEndpoints(endpoints =>
-{
-    endpoints.MapControllers();
-});
+// =======================================================
+//      ОСЬ КЛЮЧОВЕ ВИПРАВЛЕННЯ! ПОРЯДОК ВАЖЛИВИЙ!
+// =======================================================
+app.UseAuthentication(); // Спочатку дізнаємося, ХТО користувач
+app.UseAuthorization();  // Потім перевіряємо, що йому МОЖНА
 
-app.UseAuthorization();
-
-app.MapStaticAssets();
-
+// Правильне налаштування маршрутів
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
-
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+app.MapRazorPages(); // Для сторінок Identity (Login, Register)
 
 app.Run();

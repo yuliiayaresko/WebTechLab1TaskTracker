@@ -1,0 +1,92 @@
+﻿@model WebTechLab1TaskTracker.Models.TaskDetailViewModel
+
+@{
+    ViewData["Title"] = "Task Details";
+}
+
+<div class="card shadow-sm mb-4 border-0" style="background-color:#1c1f26; color:#fff;">
+    <div class="card-header d-flex justify-content-between align-items-center" style="background-color:#252a34; border-bottom:none;">
+        <div>
+            <h2 class="mb-0">@Model.Task.Title</h2>
+            <span class="badge bg-info text-dark mt-2">@Model.Task.Status</span>
+        </div>
+
+        <div class="d-flex gap-2">
+            <a asp-controller="Tasks" asp-action="Edit" asp-route-id="@Model.Task.Id" class="btn btn-sm" style="background-color:#00adb5; color:#fff;">
+                <i class="fas fa-edit me-1"></i> Редагувати
+            </a>
+            <a asp-controller="Tasks" asp-action="Delete" asp-route-id="@Model.Task.Id" class="btn btn-sm" style="background-color:#ff4c4c; color:#fff;">
+                <i class="fas fa-trash me-1"></i> Видалити
+            </a>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <p class="card-text fs-5">@Model.Task.Description</p>
+        <hr class="border-secondary">
+        <div class="d-flex justify-content-between text-white-50 small">
+            <span><strong>Проєкт:</strong> @Model.Task.Project.Name</span>
+            <span><strong>Автор:</strong> @Model.Task.ApplicationUser.UserName</span>
+        </div>
+    </div>
+
+    <div class="card-footer border-0" style="background-color:#252a34;">
+        <a asp-controller="Projects" asp-action="Details" asp-route-id="@Model.Task.ProjectId" class="btn btn-sm btn-outline-light">
+            <i class="fas fa-arrow-left me-1"></i> Назад до проєкту
+        </a>
+    </div>
+</div>
+
+<h3 class="mb-3 text-light">Коментарі (@Model.Comments.Count())</h3>
+
+@if (User.Identity.IsAuthenticated)
+{
+    <div class="card shadow-sm mb-4 border-0" style="background-color:#252a34; color:#fff;">
+        <div class="card-body">
+            <form asp-action="AddComment" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="taskId" value="@Model.Task.Id" />
+                <div class="mb-3">
+                    <textarea name="newCommentText" class="form-control" rows="3" placeholder="Напишіть коментар..." style="background-color:#1c1f26; color:#fff; border:1px solid #444;"></textarea>
+                </div>
+                <button type="submit" class="btn" style="background-color:#00adb5; color:white;">
+                    <i class="fas fa-paper-plane me-2"></i>Додати коментар
+                </button>
+            </form>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-info" style="background-color: #252a34; border-color: #00adb5; color:#fff;">
+        Будь ласка, <a asp-area="Identity" asp-page="/Account/Login" class="text-info">увійдіть у систему</a>, щоб залишити коментар.
+    </div>
+}
+
+<div class="comments-list">
+    @foreach (var comment in Model.Comments.OrderByDescending(c => c.CreatedAt))
+    {
+        <div class="card mb-3 border-0 shadow-sm" style="background-color:#252a34; color:#fff;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <p class="mb-2">@comment.Content</p>
+                        <p class="small text-white-50 mb-0">
+                            <i class="fas fa-user me-2"></i><strong>@comment.ApplicationUser.UserName</strong> ·
+                            <i class="fas fa-clock ms-2 me-1"></i>@comment.CreatedAt.ToString("g")
+                        </p>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <a asp-controller="Comments" asp-action="Edit" asp-route-id="@comment.Id" class="btn btn-sm" style="background-color:#00adb5; color:white;" title="Редагувати">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a asp-controller="Comments" asp-action="Delete" asp-route-id="@comment.Id" class="btn btn-sm" style="background-color:#ff4c4c; color:white;" title="Видалити">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

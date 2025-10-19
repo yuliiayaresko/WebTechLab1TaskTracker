@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using WebTechLab1TaskTracker.Models;
+using Task = WebTechLab1TaskTracker.Models.Task;
 
 namespace WebTechLab1TaskTracker.Data
 {
@@ -9,7 +10,6 @@ namespace WebTechLab1TaskTracker.Data
         public TaskTrackerDbContext(DbContextOptions<TaskTrackerDbContext> options)
             : base(options)
         {
-            Database.EnsureCreated();
         }
         public DbSet<Project> Projects { get; set; }
         public DbSet<WebTechLab1TaskTracker.Models.Task> Tasks { get; set; }
@@ -25,31 +25,41 @@ namespace WebTechLab1TaskTracker.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // --- Зв'язок: Користувач -> Проєкт ---
             modelBuilder.Entity<Project>()
                 .HasOne(p => p.ApplicationUser)
-                .WithMany()
+                .WithMany(u => u.Projects) // Явно вказуємо, що у юзера є колекція "Projects"
                 .HasForeignKey(p => p.ApplicationUserId)
-                .OnDelete(DeleteBehavior.Cascade);
-            modelBuilder.Entity<WebTechLab1TaskTracker.Models.Task>()
+                .OnDelete(DeleteBehavior.Cascade); // ПРАВИЛЬНО: При видаленні юзера видаляємо його проєкти.
+
+            // --- Зв'язок: Проєкт -> Завдання ---
+            modelBuilder.Entity<Task>()
                 .HasOne(t => t.Project)
-                .WithMany()
+                .WithMany(p => p.Tasks) // Явно вказуємо, що у проєкта є колекція "Tasks"
                 .HasForeignKey(t => t.ProjectId)
-                .OnDelete(DeleteBehavior.Cascade);
-            modelBuilder.Entity<WebTechLab1TaskTracker.Models.Task>()
+                .OnDelete(DeleteBehavior.Cascade); // ПРАВИЛЬНО: При видаленні проєкту видаляємо його завдання.
+
+            // --- Зв'язок: Користувач -> Завдання ---
+            modelBuilder.Entity<Task>()
                 .HasOne(t => t.ApplicationUser)
-                .WithMany()
+                .WithMany(u => u.Tasks) // Явно вказуємо, що у юзера є колекція "Tasks"
                 .HasForeignKey(t => t.ApplicationUserId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Restrict); // ВИПРАВЛЕНО: Забороняємо видаляти юзера, якщо у нього є завдання. Це розриває цикл конфліктів.
+
+            // --- Зв'язок: Завдання -> Коментар ---
             modelBuilder.Entity<Comment>()
                 .HasOne(c => c.Task)
-                .WithMany()
+                .WithMany(t => t.Comments) // Явно вказуємо, що у завдання є колекція "Comments"
                 .HasForeignKey(c => c.TaskId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Cascade); // ВИПРАВЛЕНО: При видаленні завдання автоматично видаляємо його коментарі.
+
+            // --- Зв'язок: Користувач -> Коментар ---
             modelBuilder.Entity<Comment>()
                 .HasOne(c => c.ApplicationUser)
-                .WithMany()
+                .WithMany(u => u.Comments) // Явно вказуємо, що у юзера є колекція "Comments"
                 .HasForeignKey(c => c.ApplicationUserId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Cascade); // ВИПРАВЛЕНО: Забороняємо видаляти юзера, якщо він залишив коментарі.
         }
     }
 }

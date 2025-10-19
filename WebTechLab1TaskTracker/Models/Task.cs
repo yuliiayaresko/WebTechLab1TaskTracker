@@ -9,8 +9,9 @@
         public DateTime? Deadline { get; set; }
         public string Status { get; set; }
         public int ProjectId { get; set; }
-        public Project Project { get; set; }
+        public Project? Project { get; set; }
         public string ApplicationUserId { get; set; }
-        public ApplicationUser ApplicationUser { get; set; }
+        public ApplicationUser? ApplicationUser { get; set; }
+        public virtual ICollection<Comment>? Comments { get; set; } = new List<Comment>();
     }
 }
