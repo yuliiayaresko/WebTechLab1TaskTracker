@@ -20,7 +20,7 @@ env:
 
   WORKING_DIRECTORY: "."                           # 3. Шлях до папки з .csproj та Dockerfile
 
-  DOTNET_CORE_VERSION: "9.0.9"                     # 4. Версія .NET, яку ти використовуєш
+  DOTNET_CORE_VERSION: "9.0.200"                     # 4. Версія .NET, яку ти використовуєш
 
 
 
