@@ -2,7 +2,7 @@ name: ASP.NET Core MVC CI/CD with Docker
 
 on:
   push:
-    branches: ["main"] 
+    branches: ["master"] 
 
 env:
   # --- ÇÀÏÎÂÍÈ Ö² ÇÌ²ÍÍ² ---
