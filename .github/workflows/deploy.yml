@@ -86,9 +86,9 @@ jobs:
 
       with:
 
-        context: ${{ env.WORKING_DIRECTORY }}
+        context: .
 
-        file: ${{ env.WORKING_DIRECTORY }}/Dockerfile
+        file: ./WebTechLab1TaskTracker/Dockerfile
 
         push: true
 
