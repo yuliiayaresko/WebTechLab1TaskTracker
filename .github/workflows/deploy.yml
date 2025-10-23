@@ -1,0 +1,126 @@
+name: ASP.NET Core MVC CI/CD with Docker
+
+
+
+on:
+
+  push:
+
+    branches: ["master"] 
+
+
+
+env:
+
+  # --- ЗАПОВНИ ЦІ ЗМІННІ ---
+
+  AZURE_WEBAPP_NAME: "web-tech-lab1-tasktracker"             # 1. Назва твого App Service з Кроку 5
+
+  DOCKER_IMAGE_NAME: "yuliayareska/web-tech-lab1"     # 2. Твій логін Docker Hub / назва образу
+
+  WORKING_DIRECTORY: "."                           # 3. Шлях до папки з .csproj та Dockerfile
+
+  DOTNET_CORE_VERSION: "9.0.9"                     # 4. Версія .NET, яку ти використовуєш
+
+
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+
+      uses: actions/setup-dotnet@v4
+
+      with:
+
+        dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
+
+    - name: Restore dependencies
+
+      run: dotnet restore ${{ env.WORKING_DIRECTORY }}
+
+    - name: Build
+
+      run: dotnet build --no-restore ${{ env.WORKING_DIRECTORY }}
+
+
+
+  docker-build-and-deploy:
+
+    runs-on: ubuntu-latest
+
+    needs: build # Запуститься лише, якщо 'build' успішний
+
+    steps:
+
+    - uses: actions/checkout@v4
+
+
+
+    # Крок 1: Вхід у Docker Hub (використовує секрети)
+
+    - name: Log in to Docker Hub
+
+      uses: docker/login-action@v3
+
+      with:
+
+        username: ${{ secrets.DOCKER_USERNAME }}
+
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+
+
+    # Крок 2: Збірка та публікація Docker image
+
+    - name: Build and push Docker image
+
+      uses: docker/build-push-action@v5
+
+      with:
+
+        context: ${{ env.WORKING_DIRECTORY }}
+
+        file: ${{ env.WORKING_DIRECTORY }}/Dockerfile
+
+        push: true
+
+        tags: ${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }}
+
+
+
+    # Крок 3: Аутентифікація в Azure
+
+    - name: Azure Login
+
+      uses: azure/login@v2
+
+      with:
+
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+
+
+    # Крок 4: Розгортання в Azure WebApp
+
+    - name: Deploy to Azure WebApp
+
+      uses: azure/webapps-deploy@v3
+
+      with:
+
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+
+        images: ${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }}
+
+        # Нам більше не потрібна resource-group,
+
+        # оскільки 'creds' вже містять всю інформацію про SP
+
