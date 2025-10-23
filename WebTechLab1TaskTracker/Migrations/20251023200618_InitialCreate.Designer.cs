@@ -12,8 +12,8 @@ using WebTechLab1TaskTracker.Data;
 namespace WebTechLab1TaskTracker.Migrations
 {
     [DbContext(typeof(TaskTrackerDbContext))]
-    [Migration("20251009134006_Initial")]
-    partial class Initial
+    [Migration("20251023200618_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -207,6 +207,9 @@ namespace WebTechLab1TaskTracker.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<long?>("TelegramChatId")
+                        .HasColumnType("bigint");
+
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
 
@@ -272,6 +275,9 @@ namespace WebTechLab1TaskTracker.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImagePath")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
@@ -383,7 +389,7 @@ namespace WebTechLab1TaskTracker.Migrations
                     b.HasOne("WebTechLab1TaskTracker.Models.ApplicationUser", "ApplicationUser")
                         .WithMany("Comments")
                         .HasForeignKey("ApplicationUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("WebTechLab1TaskTracker.Models.Task", "Task")

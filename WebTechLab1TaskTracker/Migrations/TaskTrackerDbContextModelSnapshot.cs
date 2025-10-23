@@ -386,7 +386,7 @@ namespace WebTechLab1TaskTracker.Migrations
                     b.HasOne("WebTechLab1TaskTracker.Models.ApplicationUser", "ApplicationUser")
                         .WithMany("Comments")
                         .HasForeignKey("ApplicationUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("WebTechLab1TaskTracker.Models.Task", "Task")

@@ -50,16 +50,15 @@ namespace WebTechLab1TaskTracker.Data
             // --- Зв'язок: Завдання -> Коментар ---
             modelBuilder.Entity<Comment>()
                 .HasOne(c => c.Task)
-                .WithMany(t => t.Comments) // Явно вказуємо, що у завдання є колекція "Comments"
+                .WithMany(t => t.Comments) 
                 .HasForeignKey(c => c.TaskId)
-                .OnDelete(DeleteBehavior.Cascade); // ВИПРАВЛЕНО: При видаленні завдання автоматично видаляємо його коментарі.
+                .OnDelete(DeleteBehavior.Cascade); 
 
-            // --- Зв'язок: Користувач -> Коментар ---
             modelBuilder.Entity<Comment>()
                 .HasOne(c => c.ApplicationUser)
-                .WithMany(u => u.Comments) // Явно вказуємо, що у юзера є колекція "Comments"
+                .WithMany(u => u.Comments) 
                 .HasForeignKey(c => c.ApplicationUserId)
-                .OnDelete(DeleteBehavior.Cascade); // ВИПРАВЛЕНО: Забороняємо видаляти юзера, якщо він залишив коментарі.
+                .OnDelete(DeleteBehavior.NoAction); 
         }
     }
 }
