@@ -16,7 +16,7 @@ env:
 
   AZURE_WEBAPP_NAME: "web-tech-lab1-tasktracker"             # 1. Назва твого App Service з Кроку 5
 
-  DOCKER_IMAGE_NAME: "yuliayareska/WebTechLab1Tracker"     # 2. Твій логін Docker Hub / назва образу
+  DOCKER_IMAGE_NAME: "yuliayareska/webtechlab1tracker"     # 2. Твій логін Docker Hub / назва образу
 
   WORKING_DIRECTORY: "WebTechLab1TaskTracker"                           # 3. Шлях до папки з .csproj та Dockerfile
 
