@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using WebTechLab1TaskTracker.Models;
 using WebTechLab1TaskTracker.Data;
 using WebTechLab1TaskTracker.Services;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,11 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 builder.Services.AddDbContext<TaskTrackerDbContext>(options =>
     options.UseSqlServer(connectionString));
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+});
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddEntityFrameworkStores<TaskTrackerDbContext>();
@@ -32,6 +38,7 @@ builder.Services.AddAuthentication()
     });
 
 var app = builder.Build();
+app.UseForwardedHeaders();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
