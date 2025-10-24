@@ -1,6 +1,7 @@
 ﻿@model WebTechLab1TaskTracker.Models.Project
 @{
     ViewData["Title"] = $"{Model.Name} - Landing Page";
+    var heroImageUrl = Model.ImagePath ?? "https://placehold.co/1920x1080/242730/f8f9fa?text=Project+Image";
 }
 
 <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
@@ -21,7 +22,6 @@
         background-color: var(--card-bg, #242730) !important;
     }
 
-    /* === Головна секція з фоном === */
     .hero-section {
         height: 100vh;
         display: flex;
@@ -29,7 +29,7 @@
         justify-content: center;
         flex-direction: column;
         text-align: center;
-        background-image: url('/images/background.png'); 
+        background-image: url('@heroImageUrl');
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
@@ -48,7 +48,6 @@
             z-index: 1;
         }
 
-        /* щоб текст був поверх затемнення */
         .hero-section > div {
             position: relative;
             z-index: 2;
@@ -150,7 +149,7 @@
     </div>
 </nav>
 
-<section id="hero" class="hero-section" style="background-image: url('@(Model.ImagePath ?? "/images/background.png")')">
+<section id="hero" class="hero-section">
     <div data-aos="fade-up">
         <h1 class="display-3 fw-bold mb-3">@Model.Name</h1>
         <p class="lead mb-4">@Model.Description</p>
@@ -249,7 +248,6 @@
             Promise.all([statusPromise, userPromise])
                 .then(([statusData, userData]) => {
 
-                    // --- Діаграма Статусів ---
                     if (statusData && statusData.length > 0) {
                         new Chart(statusCanvas.getContext('2d'), {
                             type: 'doughnut',
@@ -263,7 +261,6 @@
                         statusCanvas.parentElement.innerHTML = '<p class="text-center text-muted small h-100 d-flex align-items-center justify-content-center">No status data.</p>';
                     }
 
-                    // --- Діаграма Користувачів ---
                     if (userData && userData.length > 0) {
                         new Chart(userCanvas.getContext('2d'), {
                             type: 'bar',
