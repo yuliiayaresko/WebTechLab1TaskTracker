@@ -69,8 +69,8 @@ namespace WebTechLab1TaskTracker.Controllers
             {
                 return Forbid();
             }
-            
 
+            ViewData["ApplicationUserId"] = new SelectList(_context.Users, "Id", "UserName");
             ViewBag.StatusList = new SelectList(new List<string> { "To Do", "In Progress", "Done" });
             ViewData["ProjectId"] = projectId;
             return View();
@@ -86,21 +86,36 @@ namespace WebTechLab1TaskTracker.Controllers
             {
                 return Forbid();
             }
-            var assignedUser = await _userManager.FindByIdAsync(task.ApplicationUserId);
+
+            
+            task.ProjectId = projectId;
+            var currentUserId = _userManager.GetUserId(User); 
+            task.ApplicationUserId = currentUserId;          
+            task.CreatedAt = DateTime.Now;
+
+            
+            _context.Add(task);
+            await _context.SaveChangesAsync();
+
+            
+            var assignedUser = await _userManager.FindByIdAsync(currentUserId);
             if (assignedUser?.TelegramChatId != null)
             {
-                var message = $"Hello, {assignedUser.UserName}! A new task has been assigned to you:\n\n*Task:* {task.Title}\n*Project:* {(await _context.Projects.FindAsync(task.ProjectId))?.Name}";
+                
+                var message = $"Hello, {assignedUser.UserName}! You have created a new task:\n\n*Task:* {task.Title}\n*Project:* {project.Name}";
                 await _notificationService.SendNotificationAsync(assignedUser.TelegramChatId.Value, message);
             }
-            task.ProjectId = projectId;
-                task.ApplicationUserId = _userManager.GetUserId(User);
-                task.CreatedAt = DateTime.Now;
-                _context.Add(task);
-                await _context.SaveChangesAsync();
-                return RedirectToAction("Details", "Projects", new { id = projectId });
+
+            
+            return RedirectToAction("Details", "Projects", new { id = projectId });
+
+            
+
+            
             ViewBag.StatusList = new SelectList(new List<string> { "To Do", "In Progress", "Done" });
             return View(task);
         }
+
 
         // POST: Tasks/AddComment
         [HttpPost]
@@ -117,7 +132,7 @@ namespace WebTechLab1TaskTracker.Controllers
             {
                 var comment = new Comment
                 {
-                    Content = newCommentText, // <-- ВИПРАВЛЕНО: Content замінено на Text
+                    Content = newCommentText, 
                     TaskId = taskId,
                     ApplicationUserId = _userManager.GetUserId(User),
                     CreatedAt = DateTime.Now
@@ -188,7 +203,7 @@ namespace WebTechLab1TaskTracker.Controllers
             ViewBag.ProjectId = new SelectList(_context.Projects, "Id", "Name", task.ProjectId);
             ViewBag.ApplicationUserId = new SelectList(_userManager.Users, "Id", "UserName", task.ApplicationUserId);
             ViewBag.StatusList = new SelectList(new List<string> { "To Do", "In Progress", "Done" }, task.Status);
-            // --------------------------------------------------------------------------
+            
 
             return View(task);
         }
