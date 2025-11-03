@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - TaskTracker</title>
 
+    @{
+        // Встановлюємо опис за замовчуванням
+        var metaDescription = ViewData["MetaDescription"] as string ?? "Manage your projects and tasks effectively with TaskTracker.";
+    }
+    <meta name="description" content="@metaDescription" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
