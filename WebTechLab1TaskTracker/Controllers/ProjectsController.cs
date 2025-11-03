@@ -43,6 +43,7 @@ namespace WebTechLab1TaskTracker.Controllers
             return View(userProjects);
         }
 
+        [AllowAnonymous]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null) return NotFound();
