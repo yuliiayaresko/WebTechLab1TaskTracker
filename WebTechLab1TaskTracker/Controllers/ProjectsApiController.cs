@@ -4,7 +4,10 @@ using WebTechLab1TaskTracker.Data;
 using WebTechLab1TaskTracker.DTOs;
 using WebTechLab1TaskTracker.Models;
 using Microsoft.AspNetCore.Identity;
-using System.Security.Claims; 
+using System.Security.Claims;
+using Azure.Search.Documents;
+using Azure;
+using Azure.Search.Documents.Models;
 
 namespace WebTechLab1TaskTracker.Controllers.Api
 {
@@ -13,34 +16,74 @@ namespace WebTechLab1TaskTracker.Controllers.Api
     public class ProjectsController : ControllerBase
     {
         private readonly TaskTrackerDbContext _context;
-        private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IWebHostEnvironment _webHostEnvironment; 
+        private readonly SearchClient _searchClient;
 
-        public ProjectsController(TaskTrackerDbContext context)
+        
+        public ProjectsController(TaskTrackerDbContext context, IConfiguration configuration)
         {
             _context = context;
-            
-        }
-        [HttpGet]
-        [ResponseCache(Duration = 60)] 
-        public async Task<IActionResult> GetProjects([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
-        {
-            
 
             
-            if (pageNumber < 1) pageNumber = 1;
-            if (pageSize < 1) pageSize = 10;
-            if (pageSize > 100) pageSize = 100; 
-
-            
-            var totalRecords = await _context.Projects.CountAsync();
+            Uri serviceUrl = new Uri(configuration["AzureSearch:ServiceUrl"]);
+            AzureKeyCredential credential = new AzureKeyCredential(configuration["AzureSearch:AdminKey"]);
 
            
+            _searchClient = new SearchClient(serviceUrl, "projects-index", credential);
+        }
+
+       
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchProjects([FromQuery] string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                return BadRequest("Search query cannot be empty.");
+            }
+
+            try
+            {
+                
+                SearchResults<Project> results = await _searchClient.SearchAsync<Project>(query);
+
+               
+                var projectsDto = new List<ProjectDto>();
+                await foreach (SearchResult<Project> result in results.GetResultsAsync())
+                {
+                    projectsDto.Add(new ProjectDto
+                    {
+                        Id = result.Document.Id,
+                        Name = result.Document.Name,
+                        Description = result.Document.Description,
+                        
+                        TaskCount = 0
+                    });
+                }
+
+                return Ok(projectsDto);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error searching: {ex.Message}");
+            }
+        }
+       
+
+        [HttpGet]
+        [ResponseCache(Duration = 60)]
+        public async Task<IActionResult> GetProjects([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        {
+            if (pageNumber < 1) pageNumber = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 100) pageSize = 100;
+
+            var totalRecords = await _context.Projects.CountAsync();
+
             var pagedDataQuery = _context.Projects
                 .OrderBy(p => p.Id)
-                .Skip((pageNumber - 1) * pageSize) 
-                .Take(pageSize);                
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize);
 
-            
             var projectsDto = await pagedDataQuery
                 .Select(p => new ProjectDto
                 {
@@ -50,8 +93,6 @@ namespace WebTechLab1TaskTracker.Controllers.Api
                     TaskCount = p.Tasks.Count()
                 })
                 .ToListAsync();
-
-           
 
             var totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
             var baseUri = $"{Request.Scheme}://{Request.Host}{Request.Path}";
@@ -68,7 +109,6 @@ namespace WebTechLab1TaskTracker.Controllers.Api
                 previousPage = $"{baseUri}?pageNumber={pageNumber - 1}&pageSize={pageSize}";
             }
 
-            
             var response = new
             {
                 PageNumber = pageNumber,
@@ -77,7 +117,7 @@ namespace WebTechLab1TaskTracker.Controllers.Api
                 TotalPages = totalPages,
                 NextPage = nextPage,
                 PreviousPage = previousPage,
-                Data = projectsDto 
+                Data = projectsDto
             };
 
             return Ok(response);
@@ -111,7 +151,7 @@ namespace WebTechLab1TaskTracker.Controllers.Api
             {
                 Name = createDto.Name,
                 Description = createDto.Description,
-                ApplicationUserId = createDto.ApplicationUserId 
+                ApplicationUserId = createDto.ApplicationUserId
             };
 
             _context.Projects.Add(project);
@@ -135,8 +175,6 @@ namespace WebTechLab1TaskTracker.Controllers.Api
             return NoContent();
         }
 
-
-
         // DELETE: api/projects/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProject(int id)
@@ -150,10 +188,8 @@ namespace WebTechLab1TaskTracker.Controllers.Api
                 return NotFound();
             }
 
-            
             _context.Tasks.RemoveRange(project.Tasks);
 
-           
             _context.Projects.Remove(project);
 
             await _context.SaveChangesAsync();
