@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 namespace WebTechLab1TaskTracker.Controllers
 {
     [Authorize]
+    [AllowAnonymous]
     public class ProjectsController : Controller
     {
         private readonly TaskTrackerDbContext _context;
@@ -28,6 +29,7 @@ namespace WebTechLab1TaskTracker.Controllers
             _configuration = configuration;
         }
 
+        
         public async Task<IActionResult> Index()
         {
             if (!User.Identity.IsAuthenticated)

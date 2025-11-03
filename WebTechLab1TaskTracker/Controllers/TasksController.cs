@@ -15,6 +15,7 @@ using WebTechLab1TaskTracker.Services;
 namespace WebTechLab1TaskTracker.Controllers
 {
     [Authorize]
+    [AllowAnonymous]
     public class TasksController : Controller
     {
         private readonly TaskTrackerDbContext _context;
@@ -28,6 +29,7 @@ namespace WebTechLab1TaskTracker.Controllers
             _notificationService = notificationService;
         }
 
+       
         public async Task<IActionResult> Index()
         {
             var currentUserId = _userManager.GetUserId(User);
