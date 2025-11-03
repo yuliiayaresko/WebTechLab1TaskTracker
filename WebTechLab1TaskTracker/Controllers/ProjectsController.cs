@@ -53,10 +53,10 @@ namespace WebTechLab1TaskTracker.Controllers
                 .Include(p => p.Tasks)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
-            if (project == null || project.ApplicationUserId != _userManager.GetUserId(User))
+            /*if (project == null || project.ApplicationUserId != _userManager.GetUserId(User))
             {
                 return Forbid();
-            }
+            }*/
 
             return View(project);
         }
