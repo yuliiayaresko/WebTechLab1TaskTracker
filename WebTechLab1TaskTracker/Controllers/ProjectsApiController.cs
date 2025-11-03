@@ -43,22 +43,29 @@ namespace WebTechLab1TaskTracker.Controllers.Api
 
             try
             {
-                
-                SearchResults<Project> results = await _searchClient.SearchAsync<Project>(query);
 
                
+                SearchResults<SearchDocument> results = await _searchClient.SearchAsync<SearchDocument>(query);
+
+                
                 var projectsDto = new List<ProjectDto>();
-                await foreach (SearchResult<Project> result in results.GetResultsAsync())
+
+               
+                await foreach (SearchResult<SearchDocument> result in results.GetResultsAsync())
                 {
+                   
+                    int.TryParse(result.Document["Id"].ToString(), out int projectId);
+
                     projectsDto.Add(new ProjectDto
                     {
-                        Id = result.Document.Id,
-                        Name = result.Document.Name,
-                        Description = result.Document.Description,
-                        
+                        Id = projectId, 
+                        Name = result.Document["Name"].ToString(),
+                        Description = result.Document["Description"].ToString(),
                         TaskCount = 0
                     });
                 }
+
+                
 
                 return Ok(projectsDto);
             }
@@ -67,7 +74,7 @@ namespace WebTechLab1TaskTracker.Controllers.Api
                 return StatusCode(500, $"Error searching: {ex.Message}");
             }
         }
-       
+
 
         [HttpGet]
         [ResponseCache(Duration = 60)]
