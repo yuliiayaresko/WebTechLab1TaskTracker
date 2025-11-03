@@ -23,7 +23,7 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.R
     .AddEntityFrameworkStores<TaskTrackerDbContext>();
 
 builder.Services.AddScoped< INotificationService , TelegramNotificationService >();
-
+builder.Services.AddResponseCaching();
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages(); // Додаємо підтримку Razor Pages для Identity
 builder.Services.AddAuthentication()
@@ -50,7 +50,7 @@ else
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
-
+app.UseResponseCaching();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 

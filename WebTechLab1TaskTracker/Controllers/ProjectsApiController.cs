@@ -20,19 +20,67 @@ namespace WebTechLab1TaskTracker.Controllers.Api
             _context = context;
             
         }
-        // GET: api/Projects
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProjectDto>>> GetProjects()
+        [ResponseCache(Duration = 60)] 
+        public async Task<IActionResult> GetProjects([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            var projects = await _context.Projects
+            
+
+            
+            if (pageNumber < 1) pageNumber = 1;
+            if (pageSize < 1) pageSize = 10;
+            if (pageSize > 100) pageSize = 100; 
+
+            
+            var totalRecords = await _context.Projects.CountAsync();
+
+           
+            var pagedDataQuery = _context.Projects
+                .OrderBy(p => p.Id)
+                .Skip((pageNumber - 1) * pageSize) 
+                .Take(pageSize);                
+
+            
+            var projectsDto = await pagedDataQuery
                 .Select(p => new ProjectDto
                 {
                     Id = p.Id,
                     Name = p.Name,
                     Description = p.Description,
                     TaskCount = p.Tasks.Count()
-                }).ToListAsync();
-            return Ok(projects);
+                })
+                .ToListAsync();
+
+           
+
+            var totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
+            var baseUri = $"{Request.Scheme}://{Request.Host}{Request.Path}";
+
+            string nextPage = null;
+            if (pageNumber < totalPages)
+            {
+                nextPage = $"{baseUri}?pageNumber={pageNumber + 1}&pageSize={pageSize}";
+            }
+
+            string previousPage = null;
+            if (pageNumber > 1)
+            {
+                previousPage = $"{baseUri}?pageNumber={pageNumber - 1}&pageSize={pageSize}";
+            }
+
+            
+            var response = new
+            {
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalRecords = totalRecords,
+                TotalPages = totalPages,
+                NextPage = nextPage,
+                PreviousPage = previousPage,
+                Data = projectsDto 
+            };
+
+            return Ok(response);
         }
 
         // GET: api/Projects/5
