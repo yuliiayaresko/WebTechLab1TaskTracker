@@ -5,6 +5,8 @@ VisualStudioVersion = 17.14.36429.23
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebTechLab1TaskTracker", "WebTechLab1TaskTracker\WebTechLab1TaskTracker.csproj", "{18D9E622-5652-4FFE-B09D-39A376F4CC6D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskTracker.Tests.E2E", "TaskTracker.Tests.E2E\TaskTracker.Tests.E2E.csproj", "{15F37C45-12CB-4156-A17F-A5BEADD10174}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{18D9E622-5652-4FFE-B09D-39A376F4CC6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{18D9E622-5652-4FFE-B09D-39A376F4CC6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{18D9E622-5652-4FFE-B09D-39A376F4CC6D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15F37C45-12CB-4156-A17F-A5BEADD10174}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15F37C45-12CB-4156-A17F-A5BEADD10174}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15F37C45-12CB-4156-A17F-A5BEADD10174}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15F37C45-12CB-4156-A17F-A5BEADD10174}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
